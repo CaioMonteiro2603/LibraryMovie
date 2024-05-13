@@ -24,6 +24,11 @@ namespace LibraryMovie.Data
             modelBuilder.ApplyConfiguration(new MovieMap()); 
 
             base.OnModelCreating(modelBuilder);
+
+            //seeding data 
+            modelBuilder.Entity<UsersModel>().HasData(
+                new UsersModel {Id = 1,  Name = "Caio", Email = "caiomonteiropro@gmail.com", Password = "123789", Role = "admin" }
+            );
         }
     }
 }

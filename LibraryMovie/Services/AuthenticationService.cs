@@ -21,6 +21,7 @@ namespace LibraryMovie.Services
                     new Claim( ClaimTypes.Name , usersModel.Name),
                     new Claim( ClaimTypes.Email, usersModel.Email),
                     new Claim( ClaimTypes.Role, usersModel.Role),
+                    new Claim("Id", usersModel.Id.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(5),
                 Issuer = "library",

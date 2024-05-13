@@ -89,6 +89,8 @@ namespace LibraryMovie
                 });
             #endregion
 
+
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
