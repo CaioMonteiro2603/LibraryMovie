@@ -13,31 +13,31 @@ namespace LibraryMovie.Repository
         {
             _dataContext = dataContext; 
         }
-        public async Task<IList<CategoryModel>> FindAll()
+        public IList<CategoryModel> FindAll()
         {
-            var findAllCategorys = await _dataContext.Category.AsNoTracking().ToListAsync();
+            var findAllCategorys = _dataContext.Category.AsNoTracking().ToList();
 
             return findAllCategorys; 
         }
 
-        public async Task<IList<CategoryModel>> FindByTheme(string theme)
+        public IList<CategoryModel> FindByTheme(string theme)
         {
-            var findByTheme = await _dataContext.Category.AsNoTracking()
+            var findByTheme = _dataContext.Category.AsNoTracking()
                                                    .Where(t => t.Theme.ToLower().Contains(theme.ToLower()))
-                                                   .ToListAsync();
+                                                   .ToList();
 
             return findByTheme;                                        
         }
 
-        public async Task<CategoryModel> FindById(int id)
+        public CategoryModel FindById(int id)
         {
-            var findById = await _dataContext.Category.AsNoTracking()
-                                                      .FirstOrDefaultAsync(i => i.Id == id);
+            var findById = _dataContext.Category.AsNoTracking()
+                                                .FirstOrDefault(i => i.Id == id);
 
             return findById; 
         }
 
-        public async Task<int> Insert(CategoryModel categoryModel)
+        public int Insert(CategoryModel categoryModel)
         {
             _dataContext.Category.Add(categoryModel);
             _dataContext.SaveChanges();

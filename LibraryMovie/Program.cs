@@ -1,4 +1,3 @@
-
 using AutoMapper;
 using LibraryMovie.Data;
 using LibraryMovie.Models;
@@ -7,8 +6,14 @@ using LibraryMovie.Repository.Interface;
 using LibraryMovie.ViewModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Text;
 
 namespace LibraryMovie
@@ -31,13 +36,13 @@ namespace LibraryMovie
             );
             #endregion
 
-            #region addiction
+            #region DependencyInection
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IMoviesRepository, MovieRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             #endregion
 
-            #region configuration Mapper
+            #region MapperConfig 
             var mapperConfig = new AutoMapper.MapperConfiguration(c => {
                 c.AllowNullCollections = true;
                 c.AllowNullDestinationValues = true;
@@ -89,24 +94,59 @@ namespace LibraryMovie
                 });
             #endregion
 
+            #region versionAPI
+            builder.Services.AddApiVersioning(options =>
+            {
+                options.UseApiBehavior = false;
+                options.ReportApiVersions = true;
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.DefaultApiVersion = new ApiVersion(3, 0);
+                options.ApiVersionReader =
+                    ApiVersionReader.Combine(
+                        new HeaderApiVersionReader("x-api-version"),
+                        new QueryStringApiVersionReader(),
+                        new UrlSegmentApiVersionReader());
+            });
 
+            builder.Services.AddVersionedApiExplorer(setup => {
+                setup.GroupNameFormat = "'v'VVV";
+                setup.SubstituteApiVersionInUrl = true;
+            });
+
+            builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+            #endregion
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
+            var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+
+                // version in swagger
+                app.UseSwaggerUI(c =>
+                {
+                    foreach (var d in provider.ApiVersionDescriptions)
+                    {
+                        c.SwaggerEndpoint(
+                            $"/swagger/{d.GroupName}/swagger.json",
+                            d.GroupName.ToUpperInvariant());
+                    }
+
+                    c.DocExpansion(DocExpansion.List);
+                });
             }
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
+            app.UseApiVersioning(); 
 
             app.MapControllers();
 

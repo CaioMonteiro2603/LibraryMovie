@@ -12,42 +12,43 @@ namespace LibraryMovie.Repository
         {
             _dataContext = dataContext;
         }
-        public async Task<IList<MoviesModel>> FindAll()
+        public IList<MoviesModel> FindAll()
         {
-            var findAllMovies = await _dataContext.Movies.AsNoTracking()
-                                                         .ToListAsync();
+            var findAllMovies = _dataContext.Movies.AsNoTracking()
+                                                         .ToList();
 
             return findAllMovies;
         }
 
-        public async Task<IList<MoviesModel>> FindByTitle(string title)
+        public IList<MoviesModel> FindByRegistrationDate(DateTime? registrationReference, int height)
         {
-            var findByTitle = await _dataContext.Movies.AsNoTracking()
-                                                       .Include(c => c.Category)
-                                                       .Where(t => t.Title.ToLower().Contains(title.ToLower()))
-                                                       .ToListAsync();
+            var findByDate =  _dataContext.Movies.Where(r => r.RegistrationDate > registrationReference)
+                                                 .OrderBy(r => r.RegistrationDate)
+                                                 .Take(height)
+                                                 .AsNoTracking()
+                                                 .ToList();
+
+            return findByDate; 
+        }
+        public IList<MoviesModel> FindByTitle(string title)
+        {
+            var findByTitle = _dataContext.Movies.Include(c => c.Category)
+                                                 .Where(t => t.Title.ToLower().Contains(title.ToLower()))
+                                                 .AsNoTracking()
+                                                 .ToList();
 
             return findByTitle == null ? new List<MoviesModel>() : findByTitle;
         }
 
-        public async Task<MoviesModel> FindById(int id)
+        public MoviesModel FindById(int id)
         {
-            var findMovieId = await _dataContext.Movies.AsNoTracking()
-                                                       .FirstOrDefaultAsync(i => i.Id == id);
+            var findMovieId = _dataContext.Movies.AsNoTracking()
+                                                 .FirstOrDefault(i => i.Id == id);
 
             return findMovieId; 
         }
 
-        public async Task<MoviesModel> FindByRegistrationDate(DateTime registrationDate)
-        {
-            var findByRegistrationdate = await _dataContext.Movies.AsNoTracking()
-                                                            .Include(c => c.Category) // inner join
-                                                            .FirstOrDefaultAsync(r => r.RegistrationDate == registrationDate);
-
-            return findByRegistrationdate; 
-        }
-
-        public async Task<int> Insert(MoviesModel moviesModel)
+        public int Insert(MoviesModel moviesModel)
         {
             _dataContext.Movies.Add(moviesModel);
             _dataContext.SaveChanges();

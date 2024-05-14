@@ -27,7 +27,7 @@ namespace LibraryMovie.Models
         [StringLength(10)]
         public string? Role { get; set; }
 
-        public virtual List<MoviesModel> Movies { get; set; }
+        public virtual List<MoviesModel>? Movies { get; set; }
 
         
 

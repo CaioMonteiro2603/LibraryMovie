@@ -45,16 +45,23 @@ namespace LibraryMovie.Controllers
         [Authorize(Roles = "admin, user")]
         public async Task<ActionResult<UserResponseVM>> FindByIdAsync(int id)
         {
-            var findById = await _userRepository.FindById(id);
-
-            if(findById != null)
+            if(id == 0)
             {
-                var response = _mapper.Map<UserResponseVM>(findById);
-                return Ok(response);
+                return BadRequest(); 
             } else
             {
-                return NotFound();
-            }
+                var findById = await _userRepository.FindById(id);
+
+                if (findById != null)
+                {
+                    var response = _mapper.Map<UserResponseVM>(findById);
+                    return Ok(response);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }    
         }
 
         [HttpPost]
@@ -86,8 +93,16 @@ namespace LibraryMovie.Controllers
                 return BadRequest();
             } else
             {
-                _userRepository.Update(userModel);
-                return NoContent();
+                var isUser = _userRepository.FindById(id); 
+                if(isUser == null)
+                {
+                    return NotFound(); 
+                } else
+                {
+                    _userRepository.Update(userModel);
+                    return NoContent();
+                }
+               
             }
         }
 
@@ -100,9 +115,9 @@ namespace LibraryMovie.Controllers
                 return BadRequest();
             }
 
-            var findById = _userRepository.FindById(id);
+            var findMovieId = _userRepository.FindById(id);
 
-            if(findById == null)
+            if(findMovieId == null)
             {
                 return NotFound();
             }
