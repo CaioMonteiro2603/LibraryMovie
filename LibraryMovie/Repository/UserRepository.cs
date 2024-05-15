@@ -2,6 +2,7 @@
 using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryMovie.Repository
@@ -40,27 +41,44 @@ namespace LibraryMovie.Repository
         public async Task<int> Insert(UsersModel usersModel)
         {
             _dataContext.Users.Add(usersModel);
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
 
             return usersModel.Id;
         }
 
-        public async void Update(UsersModel usersModel)
+        public async Task<UsersModel> Update(UsersModel usersModel, int id)
         {
-            _dataContext.Users.Update(usersModel);
-            _dataContext.SaveChanges(); 
+            UsersModel userId = await FindById(id);
+
+            if(userId == null )
+            {
+                throw new Exception("Error");
+            }
+
+            userId.Name = usersModel.Name;
+            userId.Email = usersModel.Email;
+            userId.Role = usersModel.Role;
+            userId.Password = usersModel.Password;
             
+            _dataContext.Users.Update(userId);
+            await _dataContext.SaveChangesAsync();
+
+            return userId; 
         }
 
-        public async void Delete(int id)
+        public async Task<bool> Delete(int id)
         {
-            var deleteUser = new UsersModel()
-            {
-                Id = id
-            }; 
+            var delete = await FindById(id);
 
-            _dataContext.Users.Remove(deleteUser);
-            _dataContext.SaveChanges();
+            if (delete == null)
+            {
+                throw new Exception($"The user's id: {id} doesn't exist!"); 
+            }
+
+            _dataContext.Users.Remove(delete);
+            await _dataContext.SaveChangesAsync(); 
+
+            return true; 
         }
     }
 }

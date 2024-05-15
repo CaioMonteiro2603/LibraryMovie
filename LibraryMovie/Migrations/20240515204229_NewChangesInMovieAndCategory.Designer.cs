@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryMovie.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240510233936_AllModels")]
-    partial class AllModels
+    [Migration("20240515204229_NewChangesInMovieAndCategory")]
+    partial class NewChangesInMovieAndCategory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,12 @@ namespace LibraryMovie.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("MovieCategory");
                 });
@@ -51,7 +56,7 @@ namespace LibraryMovie.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("RegistrationDate")
@@ -65,14 +70,17 @@ namespace LibraryMovie.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UsersId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsersId");
 
                     b.ToTable("Movies");
                 });
@@ -108,35 +116,40 @@ namespace LibraryMovie.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "caiomonteiropro@gmail.com",
+                            Name = "Caio",
+                            Password = "123789",
+                            Role = "admin"
+                        });
+                });
+
+            modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
+                {
+                    b.HasOne("LibraryMovie.Models.UsersModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.MoviesModel", b =>
                 {
                     b.HasOne("LibraryMovie.Models.CategoryModel", "Category")
-                        .WithMany("Movies")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
 
-                    b.HasOne("LibraryMovie.Models.UsersModel", "User")
-                        .WithMany("Movies")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("LibraryMovie.Models.UsersModel", "Users")
+                        .WithMany()
+                        .HasForeignKey("UsersId");
 
                     b.Navigation("Category");
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
-                {
-                    b.Navigation("Movies");
-                });
-
-            modelBuilder.Entity("LibraryMovie.Models.UsersModel", b =>
-                {
-                    b.Navigation("Movies");
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

@@ -15,7 +15,8 @@ namespace LibraryMovie.Repository
         }
         public IList<CategoryModel> FindAll()
         {
-            var findAllCategorys = _dataContext.Category.AsNoTracking().ToList();
+            var findAllCategorys = _dataContext.Category.AsNoTracking().Include(u => u.User).ToList();
+                
 
             return findAllCategorys; 
         }
@@ -32,6 +33,7 @@ namespace LibraryMovie.Repository
         public CategoryModel FindById(int id)
         {
             var findById = _dataContext.Category.AsNoTracking()
+                                                .Include(u => u.User)
                                                 .FirstOrDefault(i => i.Id == id);
 
             return findById; 

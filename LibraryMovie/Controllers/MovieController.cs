@@ -1,5 +1,6 @@
 ﻿using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ namespace LibraryMovie.Controllers
     [ApiVersion("3.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [Authorize]
     public class MovieController : ControllerBase
     {
         private readonly IMoviesRepository _moviesRepository;
@@ -22,6 +24,23 @@ namespace LibraryMovie.Controllers
 
         [HttpGet]
         [ApiVersion("3.0")]
+        [Authorize("admin, operator")]
+        public ActionResult<IList<MoviesModel>> FindAll()
+        {
+            var findAllMovies = _moviesRepository.FindAll();
+
+            if (findAllMovies != null && findAllMovies.Count > 0)
+            {
+                return Ok(findAllMovies);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet]
+        [ApiVersion("2.0", Deprecated = true)]
         public ActionResult<IList<dynamic>> FindByRegistrationDate([FromQuery]string registrationDate, [FromQuery]int height = 5) 
         {
             var date = (string.IsNullOrEmpty(registrationDate)) ? DateTime.UtcNow.AddYears(-20) :
@@ -47,22 +66,6 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpGet]
-        [ApiVersion("2.0", Deprecated = true)]
-        public ActionResult<IList<MoviesModel>> FindAll()
-        {
-            var findAllMovies = _moviesRepository.FindAll();
-
-            if (findAllMovies != null && findAllMovies.Count > 0)
-            {
-                return Ok(findAllMovies);
-            }
-            else
-            {
-                return BadRequest();
-            }
-        }
-
-        [HttpGet]
         [ApiVersion("1.0", Deprecated = true)]
         public ActionResult<IList<MoviesModel>> FindByTitle(string title)
         {
@@ -79,6 +82,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "admin, operator, user")]
         public ActionResult<MoviesModel> FindById([FromRoute] int id)
         {
             if(id == 0)
@@ -101,17 +105,25 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin, user")]
         public ActionResult<MoviesModel> Post([FromBody] MoviesModel moviesModel)
         {
             try
             {
-                _moviesRepository.Insert(moviesModel);
-                var url = Request.GetEncodedUrl().EndsWith("/") ?
-                                                Request.GetEncodedUrl() :
-                                                Request.GetEncodedUrl() + "/";
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest();
+                }else
+                {
+                    _moviesRepository.Insert(moviesModel);
+                    var url = Request.GetEncodedUrl().EndsWith("/") ?
+                                                    Request.GetEncodedUrl() :
+                                                    Request.GetEncodedUrl() + "/";
 
-                url += moviesModel.Id; 
-                return Created(url, moviesModel);
+                    url += moviesModel.Id;
+                    return Created(url, moviesModel);
+                }
+               
             }
             catch(Exception ex)
             {
@@ -120,7 +132,8 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult<MoviesModel> Put([FromBody] MoviesModel moviesModel, [FromRoute] int id)
+        [Authorize(Roles = "admin, operator")]
+        public ActionResult Put([FromBody] MoviesModel moviesModel, [FromRoute] int id)
         {
             if((id == moviesModel.Id) || (!ModelState.IsValid))
             {
@@ -141,7 +154,8 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult<MoviesModel> Delete([FromRoute] int id)
+        [Authorize(Roles = "admin")]
+        public ActionResult Delete([FromRoute] int id)
         {
             if(id == 0)
             {

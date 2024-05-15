@@ -26,7 +26,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin, operator")]
         public async Task<ActionResult<IList<UserResponseVM>>> FindAllAsync()
         {
             var findAllUsers = await _userRepository.FindAll();
@@ -42,7 +42,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "admin, user")]
+        [Authorize(Roles = "admin, operator, user")]
         public async Task<ActionResult<UserResponseVM>> FindByIdAsync(int id)
         {
             if(id == 0)
@@ -65,7 +65,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin, operator")]
         public async Task<ActionResult<UsersModel>> Post([FromBody] UsersModel userModel)
         {
             if(!ModelState.IsValid)
@@ -85,8 +85,8 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "admin")]
-        public async Task<ActionResult> Put([FromRoute] int id, [FromBody] UsersModel userModel)
+        [Authorize(Roles = "admin, operator")]
+        public ActionResult Put([FromRoute] int id, [FromBody] UsersModel userModel)
         {
             if((!ModelState.IsValid) || (id != userModel.Id))
             {
@@ -99,7 +99,7 @@ namespace LibraryMovie.Controllers
                     return NotFound(); 
                 } else
                 {
-                    _userRepository.Update(userModel);
+                    _userRepository.Update(userModel, id);
                     return NoContent();
                 }
                
@@ -108,22 +108,16 @@ namespace LibraryMovie.Controllers
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult> Delete([FromRoute] int id)
+        public async Task<ActionResult<UsersModel>> Delete([FromRoute] int id)
         {
             if(id == 0)
             {
                 return BadRequest();
-            }
-
-            var findMovieId = _userRepository.FindById(id);
-
-            if(findMovieId == null)
+            } else
             {
-                return NotFound();
-            }
-
-            _userRepository.Delete(id);
-            return NoContent(); 
+                bool Deleted = await _userRepository.Delete(id);
+                return Ok(); 
+            }     
         }
 
         [HttpPost]

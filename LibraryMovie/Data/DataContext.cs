@@ -21,10 +21,12 @@ namespace LibraryMovie.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new MovieMap()); 
+            
+            modelBuilder.ApplyConfiguration(new MovieMap());
+
+            modelBuilder.ApplyConfiguration(new CategoryMap());
 
             base.OnModelCreating(modelBuilder);
-
             //seeding data 
             modelBuilder.Entity<UsersModel>().HasData(
                 new UsersModel {Id = 1,  Name = "Caio", Email = "caiomonteiropro@gmail.com", Password = "123789", Role = "admin" }

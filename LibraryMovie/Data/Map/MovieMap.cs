@@ -8,9 +8,15 @@ namespace LibraryMovie.Data.Map
     {
         public void Configure(EntityTypeBuilder<MoviesModel> builder)
         {
-            builder.HasKey(x => x.Id); // chave principal da classe
-            builder.HasOne(x => x.User); // entidade usuario atribuida na classe movie
-            builder.HasOne(x => x.Category); // ---''---
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Title);
+            builder.Property(x => x.RegistrationDate);
+            builder.Property(x => x.RunningTime);
+            builder.Property(x => x.CategoryId);
+            builder.Property(x => x.UserId);
+
+            builder.HasOne(x => x.Users);
+            builder.HasOne(x => x.Category); 
         }
     }
 }

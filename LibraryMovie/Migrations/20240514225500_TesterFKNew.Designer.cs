@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryMovie.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240513134704_seed")]
-    partial class seed
+    [Migration("20240514225500_TesterFKNew")]
+    partial class TesterFKNew
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,12 @@ namespace LibraryMovie.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
+                    b.Property<int>("UsersId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UsersId");
 
                     b.ToTable("MovieCategory");
                 });
@@ -65,14 +70,14 @@ namespace LibraryMovie.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("UsersId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UsersId");
 
                     b.ToTable("Movies");
                 });
@@ -120,6 +125,17 @@ namespace LibraryMovie.Migrations
                         });
                 });
 
+            modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
+                {
+                    b.HasOne("LibraryMovie.Models.UsersModel", "Users")
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("LibraryMovie.Models.MoviesModel", b =>
                 {
                     b.HasOne("LibraryMovie.Models.CategoryModel", "Category")
@@ -128,15 +144,15 @@ namespace LibraryMovie.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("LibraryMovie.Models.UsersModel", "User")
+                    b.HasOne("LibraryMovie.Models.UsersModel", "Users")
                         .WithMany("Movies")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
 
-                    b.Navigation("User");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>

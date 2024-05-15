@@ -14,7 +14,18 @@ namespace LibraryMovie.Models
         [StringLength(15)]
         public string Theme {  get; set; }
 
-        public virtual List<MoviesModel> Movies { get; set; }
-        
+        public int? UserId { get; set; }
+        public virtual UsersModel? User { get; set; }
+        public CategoryModel()
+        {
+            
+        }
+
+        public CategoryModel(int id, string theme, UsersModel user)
+        {
+            Id = id;
+            Theme = theme;
+            User = user;
+        }
     }
 }

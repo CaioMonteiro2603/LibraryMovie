@@ -20,17 +20,28 @@ namespace LibraryMovie.Models
         [Required]
         public int RunningTime {  get; set; }
 
-        public int UserId { get; set; }
+        public int? CategoryId { get; set; }
+        public virtual CategoryModel? Category { get; set; }
 
-        public UsersModel User { get; set; }
+        public int? UserId { get; set; }
+        public virtual UsersModel? Users { get; set; }
 
-        public int CategoryId { get; set; }
-
-        public CategoryModel Category { get; set; }
-        
         public MoviesModel()
         {
             
+        }
+
+        public MoviesModel(int id, string title, DateTime registrationDate, int runningTime,
+            int categoryId, CategoryModel category, int userId, UsersModel users)
+        {
+            Id = id;
+            Title = title;
+            RegistrationDate = registrationDate;
+            RunningTime = runningTime;
+            CategoryId = categoryId;
+            Category = category;
+            UserId = userId;
+            Users = users;
         }
     }
 } 

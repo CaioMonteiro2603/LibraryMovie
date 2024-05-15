@@ -11,8 +11,8 @@ namespace LibraryMovie.Repository.Interface
 
         public Task<int> Insert(UsersModel usersModel); 
 
-        public void Update(UsersModel usersModel);
+        public Task<UsersModel> Update(UsersModel usersModel, int id);
 
-        public void Delete(int id);
+        public Task<bool> Delete(int id);
     }
 }

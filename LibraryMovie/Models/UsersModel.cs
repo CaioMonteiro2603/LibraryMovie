@@ -27,15 +27,18 @@ namespace LibraryMovie.Models
         [StringLength(10)]
         public string? Role { get; set; }
 
-        public virtual List<MoviesModel>? Movies { get; set; }
-
-        
-
         public UsersModel()
         {
             
         }
 
-       
+        public UsersModel(int id, string name, string email, string password, string? role)
+        {
+            Id = id;
+            Name = name;
+            Email = email;
+            Password = password;
+            Role = role;
+        }
     }
 }

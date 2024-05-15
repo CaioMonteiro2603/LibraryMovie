@@ -1,5 +1,6 @@
 ﻿using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace LibraryMovie.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryRepository _categoryRepository;
@@ -16,6 +18,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "admin, operator")]
         public ActionResult<IList<CategoryModel>> FindAll()
         {
             var findAllCategorys = _categoryRepository.FindAll();
@@ -31,6 +34,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "admin, operator")]
         public ActionResult<CategoryModel> FindById([FromRoute] int id)
         {
             if(id == 0)
@@ -51,6 +55,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin, operator")]
         public ActionResult<CategoryModel> Post([FromBody] CategoryModel categoryModel)
         {
             _categoryRepository.Insert(categoryModel);
@@ -58,7 +63,8 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult<CategoryModel> Put([FromRoute] int id, [FromBody] CategoryModel categoryModel)
+        [Authorize(Roles = "admin, operator")]
+        public ActionResult Put([FromRoute] int id, [FromBody] CategoryModel categoryModel)
         {
             if(id != categoryModel.Id)
             {
@@ -80,6 +86,7 @@ namespace LibraryMovie.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "admin")]
         public ActionResult<CategoryModel> Delete([FromRoute] int id)
         {
             if(id == 0)

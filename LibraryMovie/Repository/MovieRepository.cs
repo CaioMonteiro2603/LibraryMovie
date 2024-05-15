@@ -15,6 +15,8 @@ namespace LibraryMovie.Repository
         public IList<MoviesModel> FindAll()
         {
             var findAllMovies = _dataContext.Movies.AsNoTracking()
+                                                         .Include(x => x.Category)
+                                                         .Include(x=> x.Users)
                                                          .ToList();
 
             return findAllMovies;
@@ -32,8 +34,9 @@ namespace LibraryMovie.Repository
         }
         public IList<MoviesModel> FindByTitle(string title)
         {
-            var findByTitle = _dataContext.Movies.Include(c => c.Category)
-                                                 .Where(t => t.Title.ToLower().Contains(title.ToLower()))
+            var findByTitle = _dataContext.Movies.Where(t => t.Title.ToLower().Contains(title.ToLower()))
+                                                 .Include(x => x.Category)
+                                                 .Include(x => x.Users)
                                                  .AsNoTracking()
                                                  .ToList();
 
@@ -43,6 +46,8 @@ namespace LibraryMovie.Repository
         public MoviesModel FindById(int id)
         {
             var findMovieId = _dataContext.Movies.AsNoTracking()
+                                                 .Include(x => x.Category)
+                                                 .Include(x => x.Users)
                                                  .FirstOrDefault(i => i.Id == id);
 
             return findMovieId; 
