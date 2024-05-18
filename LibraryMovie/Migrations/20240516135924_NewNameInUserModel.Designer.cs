@@ -4,6 +4,7 @@ using LibraryMovie.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryMovie.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240516135924_NewNameInUserModel")]
+    partial class NewNameInUserModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,17 +33,17 @@ namespace LibraryMovie.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CreatorUserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Theme")
                         .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CreatorUserId");
 
                     b.ToTable("MovieCategory");
                 });
@@ -127,11 +130,11 @@ namespace LibraryMovie.Migrations
 
             modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
                 {
-                    b.HasOne("LibraryMovie.Models.UsersModel", "User")
+                    b.HasOne("LibraryMovie.Models.UsersModel", "CreatorUser")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("CreatorUserId");
 
-                    b.Navigation("User");
+                    b.Navigation("CreatorUser");
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.MoviesModel", b =>

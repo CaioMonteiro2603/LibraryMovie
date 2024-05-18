@@ -12,8 +12,10 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using System.Reflection;
 using System.Text;
 
 namespace LibraryMovie
@@ -117,8 +119,18 @@ namespace LibraryMovie
             #endregion
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
 
+
+            #region APIDocumentation
+            builder.Services.AddSwaggerGen(options =>
+            { 
+            // Adicionar suporte a comentários XML
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            options.IncludeXmlComments(xmlPath);
+
+            });
+            #endregion
             var app = builder.Build();
 
             var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();

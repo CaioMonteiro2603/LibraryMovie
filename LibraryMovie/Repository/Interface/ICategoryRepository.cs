@@ -4,16 +4,16 @@ namespace LibraryMovie.Repository.Interface
 {
     public interface ICategoryRepository
     {
-        public IList<CategoryModel> FindAll();
+        public Task<IList<CategoryModel>> FindAll();
 
-        public IList<CategoryModel> FindByTheme(string theme);
+        public Task<IList<CategoryModel>> FindByTheme(string theme);
 
-        public CategoryModel FindById(int id);
+        public Task<CategoryModel> FindById(int id);
 
-        public int Insert(CategoryModel categoryModel);
+        public Task<int> Insert(CategoryModel categoryModel);
 
-        public void Update(CategoryModel categoryModel);
+        public Task<CategoryModel> Update(CategoryModel categoryModel, int id);
 
-        public void Delete(int id);
+        public Task<bool> Delete(int id);
     }
 }

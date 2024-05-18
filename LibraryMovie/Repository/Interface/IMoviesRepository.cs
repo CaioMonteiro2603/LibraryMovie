@@ -4,18 +4,18 @@ namespace LibraryMovie.Repository.Interface
 {
     public interface IMoviesRepository
     {
-        public IList<MoviesModel> FindAll();
+        public Task<IList<MoviesModel>> FindAll();
 
-        public IList<MoviesModel> FindByRegistrationDate(DateTime? registrationReference, int height);
+        public Task<IList<MoviesModel>> FindByRegistrationDate(DateTime? registrationReference, int height);
 
-        public IList<MoviesModel> FindByTitle(string title);
+        public Task<IList<MoviesModel>> FindByTitle(string title);
 
-        public MoviesModel FindById(int id);
+        public Task<MoviesModel> FindById(int id);
 
-        public int Insert(MoviesModel moviesModel);
+        public Task<int> Insert(MoviesModel moviesModel);
 
-        public void Update(MoviesModel moviesModel);
+        public Task<MoviesModel> Update(MoviesModel moviesModel, int id);
 
-        public void Delete(int id);
+        public Task<bool> Delete(int id);
     }
 }

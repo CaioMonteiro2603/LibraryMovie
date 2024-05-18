@@ -2,6 +2,7 @@
 using LibraryMovie.Repository.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryMovie.Controllers
@@ -17,32 +18,56 @@ namespace LibraryMovie.Controllers
             _categoryRepository = categoryRepository;
         }
 
+        /// <summary>
+        /// Find all categorys in a list
+        /// </summary>
+        /// <returns>All categorys in the database</returns>
+        /// <response code="400">Validation Error</response>
+        /// <response code="404">Category not found in the database</response>
+        /// <response code="200">Sucess</response>
         [HttpGet]
         [Authorize(Roles = "admin, operator")]
-        public ActionResult<IList<CategoryModel>> FindAll()
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IList<CategoryModel>>> FindAll()
         {
-            var findAllCategorys = _categoryRepository.FindAll();
+            var findAllCategorys = await _categoryRepository.FindAll();
 
-            if (findAllCategorys != null && findAllCategorys.Count > 0)
-            {
-                return Ok(findAllCategorys);
-            }
-            else
+            if(findAllCategorys.Count == 0)
             {
                 return BadRequest();
+            } 
+            if (findAllCategorys == null)
+            {
+                return NotFound();
             }
+
+            return Ok(findAllCategorys);   
         }
 
+        /// <summary>
+        /// Find a category by your ID
+        /// </summary>
+        /// <param name="id">Identification of the function</param>
+        /// <returns>The category's id</returns>
+        /// <response code="400">Validation error</response>
+        /// <response code="404">Object not found in the database</response>
+        /// <response code="200">Sucess</response>
         [HttpGet("{id:int}")]
         [Authorize(Roles = "admin, operator")]
-        public ActionResult<CategoryModel> FindById([FromRoute] int id)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<CategoryModel>> FindById([FromRoute] int id)
         {
             if(id == 0)
             {
                 return BadRequest(); 
+
             } else
             {
-                var findById = _categoryRepository.FindById(id);
+                var findById = await _categoryRepository.FindById(id);
 
                 if(findById == null)
                 {
@@ -54,40 +79,89 @@ namespace LibraryMovie.Controllers
             }
         }
 
+        /// <summary>
+        /// Category's creation
+        /// </summary>
+        /// <remarks>
+        /// {}
+        /// </remarks>
+        /// <param name="categoryModel">Identification if the object</param>
+        /// <returns>The category's creation response</returns>
+        /// <response code="400">Validation Error</response>
+        /// <response code="201">Created</response>
         [HttpPost]
         [Authorize(Roles = "admin, operator")]
-        public ActionResult<CategoryModel> Post([FromBody] CategoryModel categoryModel)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<CategoryModel>> Post([FromBody] CategoryModel categoryModel)
         {
-            _categoryRepository.Insert(categoryModel);
-            return Ok();
+            if(!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            await _categoryRepository.Insert(categoryModel);
+
+            var url = Request.GetEncodedUrl().EndsWith("/") ?
+                        Request.GetEncodedUrl() :
+                        Request.GetEncodedUrl() + "/";
+
+            url += categoryModel.Id;
+
+            return Created(url, categoryModel); 
         }
 
+        /// <summary>
+        /// Category's edition
+        /// </summary>
+        /// <remarks>
+        /// {}
+        /// </remarks>
+        /// <param name="id">Identification of the function by route</param>
+        /// <param name="categoryModel">Identification of the function by body</param>
+        /// <returns>The category's edition response</returns>
+        /// <response code="400">Validation Error</response>
+        /// <response code="404">Object not found in the database</response>
+        /// <response code="204">No content</response>
         [HttpPut("{id:int}")]
         [Authorize(Roles = "admin, operator")]
-        public ActionResult Put([FromRoute] int id, [FromBody] CategoryModel categoryModel)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> Put([FromRoute] int id, [FromBody] CategoryModel categoryModel)
         {
-            if(id != categoryModel.Id)
+            if((id != categoryModel.Id) || (!ModelState.IsValid))
             {
                 return BadRequest();
             } 
             else
             {
-                var isCategory = _categoryRepository.FindById(id);
+                var isCategory = await _categoryRepository.FindById(id);
 
                 if(isCategory == null)
                 {
                     return NotFound();
+
                 } else
                 {
-                    _categoryRepository.Update(categoryModel);
+                    await _categoryRepository.Update(categoryModel, id);
                     return NoContent();
                 }
             }
         }
 
+        /// <summary>
+        /// Category's remove
+        /// </summary>
+        /// <param name="id">Identification of the function by route</param>
+        /// <returns>The category's exclusion response</returns>
+        /// <response code="400">Validation error</response>
+        /// <response code="200">Ok</response>
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "admin")]
-        public ActionResult<CategoryModel> Delete([FromRoute] int id)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<CategoryModel>> Delete([FromRoute] int id)
         {
             if(id == 0)
             {
@@ -95,16 +169,8 @@ namespace LibraryMovie.Controllers
             } 
             else
             {
-                var findId = _categoryRepository.FindById(id);
-
-                if(findId == null)
-                {
-                    return NotFound();
-                } else
-                {
-                    _categoryRepository.Delete(id);
-                    return NoContent();
-                }
+                bool delete = await _categoryRepository.Delete(id);
+                return Ok(); 
             }
         }
     }

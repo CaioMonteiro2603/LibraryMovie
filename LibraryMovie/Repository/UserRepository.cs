@@ -52,7 +52,7 @@ namespace LibraryMovie.Repository
 
             if(userId == null )
             {
-                throw new Exception("Error");
+                throw new Exception($"The user's id: {id} doesn't exist!");
             }
 
             userId.Name = usersModel.Name;

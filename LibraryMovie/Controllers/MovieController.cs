@@ -22,38 +22,69 @@ namespace LibraryMovie.Controllers
             _moviesRepository = moviesRepository;  
         }
 
+        /// <summary>
+        /// Find all movies in a list
+        /// </summary>
+        /// <returns>All movies in the database</returns>
+        /// <response code="400">Validation error</response>
+        /// <response code="404">Movie not found</response>
+        /// <response code="200">Sucess</response>
         [HttpGet]
         [ApiVersion("3.0")]
-        [Authorize("admin, operator")]
-        public ActionResult<IList<MoviesModel>> FindAll()
+        [Authorize(Roles = "admin, operator")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IList<MoviesModel>>> FindAll()
         {
-            var findAllMovies = _moviesRepository.FindAll();
+            var findAllMovies = await _moviesRepository.FindAll();
 
-            if (findAllMovies != null && findAllMovies.Count > 0)
+            if(findAllMovies.Count == 0)
             {
-                return Ok(findAllMovies);
+                return BadRequest(); 
             }
-            else
+
+            if (findAllMovies == null)
             {
-                return BadRequest();
+                return NotFound();
+               
             }
+
+            return Ok(findAllMovies);
         }
 
+        /// <summary>
+        /// Find a movie by your registration date
+        /// </summary>
+        /// <param name="registrationDate">Identification of the movie</param>
+        /// <param name="height">Page's height</param>
+        /// <returns>The movie's registration date</returns>
+        /// <response code="404">Movie not found</response>
+        /// <response code="400">Validation error</response>
+        /// <response code="200">Sucess</response>
         [HttpGet]
         [ApiVersion("2.0", Deprecated = true)]
-        public ActionResult<IList<dynamic>> FindByRegistrationDate([FromQuery]string registrationDate, [FromQuery]int height = 5) 
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IList<dynamic>>> FindByRegistrationDate([FromQuery]string registrationDate, [FromQuery]int height = 5) 
         {
             var date = (string.IsNullOrEmpty(registrationDate)) ? DateTime.UtcNow.AddYears(-20) :
                 DateTime.ParseExact(registrationDate, "yyyy-MM-ddTHH:mm:ss:fffffff", null, System.Globalization.DateTimeStyles.RoundtripKind);
 
-            var findBydate = _moviesRepository.FindByRegistrationDate(date, height);
+            var findBydate = await _moviesRepository.FindByRegistrationDate(date, height);
             var newReferenceDate = findBydate.LastOrDefault().RegistrationDate.ToString("yyyy-MM-ddTHH:mm:ss:fffffff");
 
             var linkPage = $"api/movie?registrationDate={newReferenceDate}&height={height}";
 
-            if(findBydate == null || findBydate.Count == 0)
+            if(findBydate == null)
             {
-                return NoContent();
+                return NotFound();
+            }
+
+            if(findBydate.Count == 0)
+            {
+                return BadRequest();
             }
 
             var findNew = new
@@ -65,25 +96,46 @@ namespace LibraryMovie.Controllers
             return Ok(findNew);
         }
 
+        /// <summary>
+        /// Find a movie by your title
+        /// </summary>
+        /// <param name="title">Identification of the movie</param>
+        /// <returns>The movie's title</returns>
+        /// <response code="404">Movie not found</response>
+        /// <response code="400">Validation error</response>
+        /// <response code="200">Sucess</response>
         [HttpGet]
         [ApiVersion("1.0", Deprecated = true)]
-        public ActionResult<IList<MoviesModel>> FindByTitle(string title)
+        public async Task<ActionResult<IList<MoviesModel>>> FindByTitle(string title)
         {
-            var findByTitle = _moviesRepository.FindByTitle(title);
+            var findByTitle = await _moviesRepository.FindByTitle(title);
 
             if (findByTitle == null)
             {
                 return NotFound();
             }
-            else
+            if(findByTitle.Count == 0)
             {
-                return Ok(findByTitle);
+                return BadRequest();
             }
+
+            return Ok(findByTitle); 
         }
 
+        /// <summary>
+        /// Find a movie by your ID
+        /// </summary>
+        /// <param name="id">Identification of the function</param>
+        /// <returns>The movie's id</returns>
+        /// <response code="400">Validation error</response>
+        /// <response code="404">Object not found in the database</response>
+        /// <response code="200">Sucess</response>
         [HttpGet("{id:int}")]
         [Authorize(Roles = "admin, operator, user")]
-        public ActionResult<MoviesModel> FindById([FromRoute] int id)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<MoviesModel>> FindById([FromRoute] int id)
         {
             if(id == 0)
             {
@@ -92,7 +144,7 @@ namespace LibraryMovie.Controllers
             }
             else
             {
-                var findById = _moviesRepository.FindById(id);
+                var findById = await _moviesRepository.FindById(id);
 
                 if(findById == null)
                 {
@@ -104,9 +156,21 @@ namespace LibraryMovie.Controllers
             }
         }
 
+        /// <summary>
+        /// Movie's creation
+        /// </summary>
+        /// <remarks>
+        /// {}
+        /// </remarks>
+        /// <param name="moviesModel">Identification of the function</param>
+        /// <returns>The movie's creation response</returns>
+        /// <response code="400">Validation Error</response>
+        /// <response code="201">Created</response>
         [HttpPost]
         [Authorize(Roles = "admin, user")]
-        public ActionResult<MoviesModel> Post([FromBody] MoviesModel moviesModel)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<MoviesModel>> Post([FromBody] MoviesModel moviesModel)
         {
             try
             {
@@ -115,7 +179,7 @@ namespace LibraryMovie.Controllers
                     return BadRequest();
                 }else
                 {
-                    _moviesRepository.Insert(moviesModel);
+                    await _moviesRepository.Insert(moviesModel);
                     var url = Request.GetEncodedUrl().EndsWith("/") ?
                                                     Request.GetEncodedUrl() :
                                                     Request.GetEncodedUrl() + "/";
@@ -127,52 +191,67 @@ namespace LibraryMovie.Controllers
             }
             catch(Exception ex)
             {
-                return BadRequest(ex.Message); 
+                return BadRequest(ex.Message);  
             }
         }
 
+        /// <summary>
+        /// Movie's edition
+        /// </summary>
+        /// <remarks>
+        /// {}
+        /// </remarks>
+        /// <param name="id">Identification of the function by route</param>
+        /// <param name="moviesModel">Identification of the function by body</param>
+        /// <returns>The movie's edition response</returns>
+        /// <response code="400">Validation Error</response>
+        /// <response code="404">Object not found in the database</response>
+        /// <response code="204">No content</response>
         [HttpPut("{id:int}")]
         [Authorize(Roles = "admin, operator")]
-        public ActionResult Put([FromBody] MoviesModel moviesModel, [FromRoute] int id)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> Put([FromBody] MoviesModel moviesModel, [FromRoute] int id)
         {
-            if((id == moviesModel.Id) || (!ModelState.IsValid))
+            if((id != moviesModel.Id) || (!ModelState.IsValid))
             {
                 return BadRequest(); 
             } else
             {
-                var ismovie = _moviesRepository.FindById(id);
+                var ismovie = await _moviesRepository.FindById(id);
 
                 if(ismovie == null)
                 {
                     return NotFound();
                 } else
                 {
-                    _moviesRepository.Update(moviesModel);
+                    await _moviesRepository.Update(moviesModel, id);
                     return NoContent(); 
                 }
             }
         }
 
+        /// <summary>
+        /// Category's remove
+        /// </summary>
+        /// <param name="id">Identification of the function by route</param>
+        /// <returns>The movie's exclusion response</returns>
+        /// <response code="400">Validation error</response>
+        /// <response code="200">Ok</response>
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "admin")]
-        public ActionResult Delete([FromRoute] int id)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> Delete([FromRoute] int id)
         {
             if(id == 0)
             {
                 return BadRequest();
-            }else
-            {
-                var findMovieId = FindById(id);
-
-                if(findMovieId == null)
-                {
-                    return NotFound();
-                } else
-                {
-                    _moviesRepository.Delete(id);
-                    return NoContent();
-                }
             }
+
+            bool deleted = await _moviesRepository.Delete(id);
+            return NoContent();
         }
     }
 }

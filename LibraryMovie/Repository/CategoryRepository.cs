@@ -13,55 +13,65 @@ namespace LibraryMovie.Repository
         {
             _dataContext = dataContext; 
         }
-        public IList<CategoryModel> FindAll()
+        public async Task<IList<CategoryModel>> FindAll()
         {
-            var findAllCategorys = _dataContext.Category.AsNoTracking().Include(u => u.User).ToList();
+            var findAllCategorys = await _dataContext.Category.AsNoTracking().Include(u => u.User).ToListAsync();
                 
 
             return findAllCategorys; 
         }
 
-        public IList<CategoryModel> FindByTheme(string theme)
+        public async Task<IList<CategoryModel>> FindByTheme(string theme)
         {
-            var findByTheme = _dataContext.Category.AsNoTracking()
+            var findByTheme = await _dataContext.Category.AsNoTracking()
                                                    .Where(t => t.Theme.ToLower().Contains(theme.ToLower()))
-                                                   .ToList();
+                                                   .ToListAsync();
 
             return findByTheme;                                        
         }
 
-        public CategoryModel FindById(int id)
+        public async Task<CategoryModel> FindById(int id)
         {
-            var findById = _dataContext.Category.AsNoTracking()
+            var findById = await _dataContext.Category.AsNoTracking()
                                                 .Include(u => u.User)
-                                                .FirstOrDefault(i => i.Id == id);
+                                                .FirstOrDefaultAsync(i => i.Id == id);
 
             return findById; 
         }
 
-        public int Insert(CategoryModel categoryModel)
+        public async Task<int> Insert(CategoryModel categoryModel)
         {
             _dataContext.Category.Add(categoryModel);
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
 
             return categoryModel.Id;
         }
 
-        public void Update(CategoryModel categoryModel)
+        public async Task<CategoryModel> Update(CategoryModel categoryModel, int id)
         {
-            _dataContext.Category.Update(categoryModel);
-            _dataContext.SaveChanges();
+            var categoryId = await FindById(id);
+
+            if (categoryId == null) throw new Exception($"The category's id: {id} doesn't exist!"); 
+
+            categoryId.Id = categoryModel.Id;
+            categoryId.Theme = categoryModel.Theme;
+
+            _dataContext.Category.Update(categoryId);
+            await _dataContext.SaveChangesAsync();
+
+            return categoryId; 
         }
 
-        public void Delete(int id)
+        public async Task<bool> Delete(int id)
         {
-            var deleteCategory = new CategoryModel()
-            {
-                Id = id
-            };
+            var deleteId = await FindById(id);
 
-            _dataContext.Category.Remove(deleteCategory);
-            _dataContext.SaveChanges();
+            if (deleteId == null) throw new Exception($"The category's id: {id} doesn't exist!");
+
+            _dataContext.Category.Remove(deleteId);
+            await _dataContext.SaveChangesAsync();
+
+            return true; 
         }
     }
 }

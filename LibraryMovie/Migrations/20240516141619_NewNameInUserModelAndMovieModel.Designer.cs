@@ -4,6 +4,7 @@ using LibraryMovie.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryMovie.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240516141619_NewNameInUserModelAndMovieModel")]
+    partial class NewNameInUserModelAndMovieModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,6 +59,9 @@ namespace LibraryMovie.Migrations
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CreatorOfTheCategoryId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("datetime2");
 
@@ -75,7 +81,7 @@ namespace LibraryMovie.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CreatorOfTheCategoryId");
 
                     b.HasIndex("UsersId");
 
@@ -136,15 +142,15 @@ namespace LibraryMovie.Migrations
 
             modelBuilder.Entity("LibraryMovie.Models.MoviesModel", b =>
                 {
-                    b.HasOne("LibraryMovie.Models.CategoryModel", "Category")
+                    b.HasOne("LibraryMovie.Models.CategoryModel", "CreatorOfTheCategory")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CreatorOfTheCategoryId");
 
                     b.HasOne("LibraryMovie.Models.UsersModel", "Users")
                         .WithMany("Movies")
                         .HasForeignKey("UsersId");
 
-                    b.Navigation("Category");
+                    b.Navigation("CreatorOfTheCategory");
 
                     b.Navigation("Users");
                 });

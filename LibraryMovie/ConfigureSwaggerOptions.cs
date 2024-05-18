@@ -30,11 +30,10 @@ namespace LibraryMovie
         {
             var info = new OpenApiInfo()
             {
-                Title = "Fiap Api Web API",
+                Title = "LibraryMovie",
                 Version = description.ApiVersion.ToString(),
-                Description = "A sample application with Swagger, Swashbuckle, and API versioning.",
-                Contact = new OpenApiContact() { Name = "Bill Mei", Email = "bill.mei@somewhere.com" },
-                License = new OpenApiLicense() { Name = "MIT", Url = new Uri("https://opensource.org/licenses/MIT") }
+                Description = "An application with Swagger, Swashbuckle, and API versioning.",
+                Contact = new OpenApiContact() { Name = "Caio Monteiro", Email = "caiomonteiropro@gmail.com"}
             };
 
             if (description.IsDeprecated)
