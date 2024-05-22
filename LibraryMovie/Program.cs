@@ -1,5 +1,6 @@
 using AutoMapper;
 using LibraryMovie.Data;
+using LibraryMovie.DTOs;
 using LibraryMovie.Models;
 using LibraryMovie.Repository;
 using LibraryMovie.Repository.Interface;
@@ -57,7 +58,14 @@ namespace LibraryMovie
                 c.CreateMap<LoginResponseVM, UsersModel>();
                 c.CreateMap<UsersModel, LoginResponseVM>();
 
-                c.CreateMap<UsersModel, UserResponseVM>();
+                c.CreateMap<UsersModel, UserDto>();
+                c.CreateMap<UserDto, UsersModel>();
+
+                c.CreateMap<MoviesModel, MoviesDto>();
+                c.CreateMap<MoviesDto, MoviesModel>();
+
+                c.CreateMap<CategoryModel, CategoryDto>();
+                c.CreateMap<CategoryDto, CategoryModel>();
 
             });
 

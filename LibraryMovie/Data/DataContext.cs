@@ -43,12 +43,12 @@ namespace LibraryMovie.Data
 
             modelBuilder.Entity<UsersModel>()
                 .Property(c=> c.Name)
-                .HasColumnName("name")
+                .HasColumnName("Name")
                 .HasMaxLength(10);
 
             modelBuilder.Entity<UsersModel>()
                 .Property(c => c.Password)
-                .HasColumnName("password")
+                .HasColumnName("Password")
                 .HasMaxLength(12);
 
             modelBuilder.Entity<UsersModel>()
@@ -72,10 +72,11 @@ namespace LibraryMovie.Data
                 .HasForeignKey(c => c.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CategoryModel>()
-                .HasOne(u => u.Users)
-                .WithOne()
-                .HasForeignKey<UsersModel>(u => u.CategoryId); 
+            modelBuilder.Entity<UsersModel>()
+               .HasMany(c => c.Categories)
+               .WithOne(c => c.Users)
+               .HasForeignKey(c => c.UserId)
+               .OnDelete(DeleteBehavior.Restrict);
                 
             modelBuilder.Entity<UsersModel>()
                 .HasMany(c => c.Movies)

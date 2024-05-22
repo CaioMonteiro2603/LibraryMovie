@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LibraryMovie.DTOs;
 using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
 using LibraryMovie.Services;
@@ -37,7 +38,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IList<UserResponseVM>>> FindAllAsync()
+        public async Task<ActionResult<IList<UserDto>>> FindAllAsync()
         {
             var findAllUsers = await _userRepository.FindAll();
 
@@ -51,7 +52,7 @@ namespace LibraryMovie.Controllers
                 return NotFound();
             }
             
-            var response = _mapper.Map<List<UserResponseVM>>(findAllUsers);
+            var response = _mapper.Map<List<UserDto>>(findAllUsers);
             return Ok(response);
             
         }
@@ -69,7 +70,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserResponseVM>> FindByIdAsync(int id)
+        public async Task<ActionResult<UserDto>> FindByIdAsync(int id)
         {
 
             if(id == 0)
@@ -81,7 +82,7 @@ namespace LibraryMovie.Controllers
 
                 if (findById != null)
                 {
-                    var response = _mapper.Map<UserResponseVM>(findById);
+                    var response = _mapper.Map<UserDto>(findById);
                     return Ok(response);
                 }
                 else
@@ -105,7 +106,7 @@ namespace LibraryMovie.Controllers
         [Authorize(Roles = "admin, operator")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<UsersModel>> Post([FromBody] UsersModel userModel)
+        public async Task<ActionResult<UserDto>> Post([FromBody] UsersModel userModel)
         {
             if(!ModelState.IsValid)
             {
@@ -114,13 +115,15 @@ namespace LibraryMovie.Controllers
 
             await _userRepository.Insert(userModel);
 
+            var response = _mapper.Map<UserDto>(userModel); 
+
             var url = Request.GetEncodedUrl().EndsWith("/") ?
                         Request.GetEncodedUrl() :
                         Request.GetEncodedUrl() + "/";
 
             url += userModel.Id; 
 
-            return Created(url, userModel);
+            return Created(url, response);
         }
 
         /// <summary>

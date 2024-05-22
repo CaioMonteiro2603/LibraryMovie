@@ -1,6 +1,6 @@
-﻿namespace LibraryMovie.ViewModel
+﻿namespace LibraryMovie.DTOs
 {
-    public class UserResponseVM
+    public class UserDto
     {
         public int Id { get; set; }
 

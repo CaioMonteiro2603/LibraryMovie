@@ -8,13 +8,15 @@ namespace LibraryMovie.Models
         [Required]
         public string Theme { get; set; }
         public virtual ICollection<MoviesModel>? Movies { get; set; }
-        public UsersModel Users { get; set; }
+
+        public int? UserId { get; set; }
+        public UsersModel? Users { get; set; }
         public CategoryModel()
         {
             
         }
 
-        public CategoryModel(int movieCategoryId, string theme, List<MoviesModel>? movies, UsersModel users)
+        public CategoryModel(int movieCategoryId, string theme, List<MoviesModel>? movies, UsersModel? users)
         {
             MovieCategoryId = movieCategoryId;
             Theme = theme;

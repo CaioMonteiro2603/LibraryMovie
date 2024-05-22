@@ -1,4 +1,6 @@
-﻿using LibraryMovie.Models;
+﻿using AutoMapper;
+using LibraryMovie.DTOs;
+using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,10 +18,12 @@ namespace LibraryMovie.Controllers
     public class MovieController : ControllerBase
     {
         private readonly IMoviesRepository _moviesRepository;
+        private readonly IMapper _mapper; 
 
-        public MovieController(IMoviesRepository moviesRepository)
+        public MovieController(IMoviesRepository moviesRepository, IMapper mapper)
         {
             _moviesRepository = moviesRepository;  
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -35,7 +39,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IList<MoviesModel>>> FindAll()
+        public async Task<ActionResult<IList<MoviesDto>>> FindAll()
         {
             var findAllMovies = await _moviesRepository.FindAll();
 
@@ -50,7 +54,8 @@ namespace LibraryMovie.Controllers
                
             }
 
-            return Ok(findAllMovies);
+            var response = _mapper.Map<List<MoviesDto>>(findAllMovies);
+            return Ok(response);
         }
 
         /// <summary>
@@ -93,6 +98,7 @@ namespace LibraryMovie.Controllers
                 linkPage
             };
 
+            
             return Ok(findNew);
         }
 
@@ -106,7 +112,7 @@ namespace LibraryMovie.Controllers
         /// <response code="200">Sucess</response>
         [HttpGet]
         [ApiVersion("1.0", Deprecated = true)]
-        public async Task<ActionResult<IList<MoviesModel>>> FindByTitle(string title)
+        public async Task<ActionResult<IList<MoviesDto>>> FindByTitle(string title)
         {
             var findByTitle = await _moviesRepository.FindByTitle(title);
 
@@ -119,7 +125,8 @@ namespace LibraryMovie.Controllers
                 return BadRequest();
             }
 
-            return Ok(findByTitle); 
+            var response = _mapper.Map<List<MoviesDto>>(findByTitle);
+            return Ok(response); 
         }
 
         /// <summary>
@@ -135,7 +142,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<MoviesModel>> FindById([FromRoute] int id)
+        public async Task<ActionResult<MoviesDto>> FindById([FromRoute] int id)
         {
             if(id == 0)
             {
@@ -151,7 +158,8 @@ namespace LibraryMovie.Controllers
                     return NotFound();
                 } else
                 {
-                    return Ok(findById); 
+                    var response = _mapper.Map<MoviesDto>(findById);
+                    return Ok(response); 
                 }
             }
         }
@@ -170,7 +178,7 @@ namespace LibraryMovie.Controllers
         [Authorize(Roles = "admin, user")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<MoviesModel>> Post([FromBody] MoviesModel moviesModel)
+        public async Task<ActionResult<MoviesDto>> Post([FromBody] MoviesModel moviesModel)
         {
             try
             {
@@ -179,13 +187,17 @@ namespace LibraryMovie.Controllers
                     return BadRequest();
                 }else
                 {
+
                     await _moviesRepository.Insert(moviesModel);
+
+                    var response = _mapper.Map<MoviesDto>(moviesModel); 
+
                     var url = Request.GetEncodedUrl().EndsWith("/") ?
                                                     Request.GetEncodedUrl() :
                                                     Request.GetEncodedUrl() + "/";
 
                     url += moviesModel.Id;
-                    return Created(url, moviesModel);
+                    return Created(url, response);
                 }
                
             }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryMovie.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240522125134_All")]
-    partial class All
+    [Migration("20240522234818_newDB")]
+    partial class newDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,11 +36,17 @@ namespace LibraryMovie.Migrations
                     b.Property<string>("Theme")
                         .IsRequired()
                         .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasColumnType("nvarchar(15)")
+                        .HasColumnName("Theme");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("MovieCategoryId");
 
-                    b.ToTable("MovieCategory");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MovieCategory", (string)null);
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.MoviesModel", b =>
@@ -62,8 +68,9 @@ namespace LibraryMovie.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("title");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -74,7 +81,7 @@ namespace LibraryMovie.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Movies");
+                    b.ToTable("Movies", (string)null);
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.UsersModel", b =>
@@ -85,41 +92,31 @@ namespace LibraryMovie.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CategoryMovieCategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("Name");
 
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
+                        .HasColumnType("nvarchar(12)")
+                        .HasColumnName("Password");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)")
+                        .HasColumnName("Role");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId")
-                        .IsUnique()
-                        .HasFilter("[CategoryId] IS NOT NULL");
-
-                    b.HasIndex("CategoryMovieCategoryId");
-
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
@@ -130,6 +127,16 @@ namespace LibraryMovie.Migrations
                             Password = "123789",
                             Role = "admin"
                         });
+                });
+
+            modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
+                {
+                    b.HasOne("LibraryMovie.Models.UsersModel", "Users")
+                        .WithMany("Categories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.MoviesModel", b =>
@@ -149,29 +156,15 @@ namespace LibraryMovie.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("LibraryMovie.Models.UsersModel", b =>
-                {
-                    b.HasOne("LibraryMovie.Models.CategoryModel", null)
-                        .WithOne("Users")
-                        .HasForeignKey("LibraryMovie.Models.UsersModel", "CategoryId");
-
-                    b.HasOne("LibraryMovie.Models.CategoryModel", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryMovieCategoryId");
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
                 {
                     b.Navigation("Movies");
-
-                    b.Navigation("Users")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.UsersModel", b =>
                 {
+                    b.Navigation("Categories");
+
                     b.Navigation("Movies");
                 });
 #pragma warning restore 612, 618

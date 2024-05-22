@@ -1,4 +1,6 @@
-﻿using LibraryMovie.Models;
+﻿using AutoMapper;
+using LibraryMovie.DTOs;
+using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,9 +15,11 @@ namespace LibraryMovie.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryRepository _categoryRepository;
-        public CategoryController(ICategoryRepository categoryRepository)
+        private readonly IMapper _mapper;
+        public CategoryController(ICategoryRepository categoryRepository, IMapper mapper)
         {
             _categoryRepository = categoryRepository;
+            _mapper = mapper;   
         }
 
         /// <summary>
@@ -30,7 +34,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IList<CategoryModel>>> FindAll()
+        public async Task<ActionResult<IList<CategoryDto>>> FindAllAsync()
         {
             var findAllCategorys = await _categoryRepository.FindAll();
 
@@ -43,7 +47,8 @@ namespace LibraryMovie.Controllers
                 return NotFound();
             }
 
-            return Ok(findAllCategorys);   
+            var response = _mapper.Map<List<CategoryDto>>(findAllCategorys); 
+            return Ok(response);   
         }
 
         /// <summary>
@@ -59,7 +64,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<CategoryModel>> FindById([FromRoute] int id)
+        public async Task<ActionResult<CategoryDto>> FindById([FromRoute] int id)
         {
             if(id == 0)
             {
@@ -74,7 +79,8 @@ namespace LibraryMovie.Controllers
                     return NotFound();
                 } else
                 {
-                    return Ok(findById);
+                    var response = _mapper.Map<CategoryDto>(findById);
+                    return Ok(response);
                 }
             }
         }
@@ -93,7 +99,7 @@ namespace LibraryMovie.Controllers
         [Authorize(Roles = "admin, operator")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<CategoryModel>> Post([FromBody] CategoryModel categoryModel)
+        public async Task<ActionResult<CategoryDto>> Post([FromBody] CategoryModel categoryModel)
         {
             if(!ModelState.IsValid)
             {
@@ -102,13 +108,15 @@ namespace LibraryMovie.Controllers
 
             await _categoryRepository.Insert(categoryModel);
 
+            var response = _mapper.Map<CategoryDto>(categoryModel);
+
             var url = Request.GetEncodedUrl().EndsWith("/") ?
                         Request.GetEncodedUrl() :
                         Request.GetEncodedUrl() + "/";
 
             url += categoryModel.MovieCategoryId;
 
-            return Created(url, categoryModel); 
+            return Created(url, response); 
         }
 
         /// <summary>
