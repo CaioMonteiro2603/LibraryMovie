@@ -1,6 +1,7 @@
 ﻿using LibraryMovie.Data;
 using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
+using LibraryMovie.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +11,12 @@ namespace LibraryMovie.Repository
     public class UserRepository : IUserRepository
     {
         private readonly DataContext _dataContext;
+        private readonly AuthenticationService _autheticationService; 
 
-        public UserRepository(DataContext dataContext)
+        public UserRepository(DataContext dataContext, AuthenticationService authenticationService)
         {
             _dataContext = dataContext;
+            _autheticationService = authenticationService;
         }
         public async Task<IList<UsersModel>> FindAll()
         {

@@ -106,7 +106,7 @@ namespace LibraryMovie.Controllers
                         Request.GetEncodedUrl() :
                         Request.GetEncodedUrl() + "/";
 
-            url += categoryModel.Id;
+            url += categoryModel.MovieCategoryId;
 
             return Created(url, categoryModel); 
         }
@@ -130,7 +130,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> Put([FromRoute] int id, [FromBody] CategoryModel categoryModel)
         {
-            if((id != categoryModel.Id) || (!ModelState.IsValid))
+            if((id != categoryModel.MovieCategoryId) || (!ModelState.IsValid))
             {
                 return BadRequest();
             } 

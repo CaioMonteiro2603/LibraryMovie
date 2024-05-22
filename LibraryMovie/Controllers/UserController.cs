@@ -71,6 +71,7 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserResponseVM>> FindByIdAsync(int id)
         {
+
             if(id == 0)
             {
                 return BadRequest(); 

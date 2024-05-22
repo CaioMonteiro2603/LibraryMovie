@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryMovie.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240516141619_NewNameInUserModelAndMovieModel")]
-    partial class NewNameInUserModelAndMovieModel
+    [Migration("20240522125134_All")]
+    partial class All
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,23 +27,18 @@ namespace LibraryMovie.Migrations
 
             modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("MovieCategoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MovieCategoryId"));
 
                     b.Property<string>("Theme")
                         .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
+                    b.HasKey("MovieCategoryId");
 
                     b.ToTable("MovieCategory");
                 });
@@ -57,9 +52,6 @@ namespace LibraryMovie.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CreatorOfTheCategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("RegistrationDate")
@@ -76,14 +68,11 @@ namespace LibraryMovie.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UsersId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorOfTheCategoryId");
+                    b.HasIndex("CategoryId");
 
-                    b.HasIndex("UsersId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Movies");
                 });
@@ -95,6 +84,12 @@ namespace LibraryMovie.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CategoryMovieCategoryId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -118,6 +113,12 @@ namespace LibraryMovie.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId")
+                        .IsUnique()
+                        .HasFilter("[CategoryId] IS NOT NULL");
+
+                    b.HasIndex("CategoryMovieCategoryId");
+
                     b.ToTable("Users");
 
                     b.HasData(
@@ -131,28 +132,42 @@ namespace LibraryMovie.Migrations
                         });
                 });
 
-            modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
-                {
-                    b.HasOne("LibraryMovie.Models.UsersModel", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("LibraryMovie.Models.MoviesModel", b =>
                 {
-                    b.HasOne("LibraryMovie.Models.CategoryModel", "CreatorOfTheCategory")
-                        .WithMany()
-                        .HasForeignKey("CreatorOfTheCategoryId");
+                    b.HasOne("LibraryMovie.Models.CategoryModel", "Category")
+                        .WithMany("Movies")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("LibraryMovie.Models.UsersModel", "Users")
                         .WithMany("Movies")
-                        .HasForeignKey("UsersId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("CreatorOfTheCategory");
+                    b.Navigation("Category");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("LibraryMovie.Models.UsersModel", b =>
+                {
+                    b.HasOne("LibraryMovie.Models.CategoryModel", null)
+                        .WithOne("Users")
+                        .HasForeignKey("LibraryMovie.Models.UsersModel", "CategoryId");
+
+                    b.HasOne("LibraryMovie.Models.CategoryModel", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryMovieCategoryId");
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("LibraryMovie.Models.CategoryModel", b =>
+                {
+                    b.Navigation("Movies");
+
+                    b.Navigation("Users")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("LibraryMovie.Models.UsersModel", b =>

@@ -16,6 +16,7 @@ namespace LibraryMovie.Repository
         {
             var findAllMovies = await _dataContext.Movies.AsNoTracking()
                                                          .Include(x => x.Category)
+                                                         .ThenInclude(x => x.Users)
                                                          .Include(x=> x.Users)
                                                          .ToListAsync();
 

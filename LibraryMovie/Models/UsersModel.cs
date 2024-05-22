@@ -27,13 +27,17 @@ namespace LibraryMovie.Models
         [StringLength(10)]
         public string? Role { get; set; }
 
-        public virtual List<MoviesModel>? Movies {  get; set; }
+        public virtual ICollection<MoviesModel>? Movies {  get; set; }
+
+        public int? CategoryId { get; set; }
+        public CategoryModel? Category { get; set; }
         public UsersModel()
         {
             
         }
 
-        public UsersModel(int id, string name, string email, string password, string? role, List<MoviesModel>? movies)
+        public UsersModel(int id, string name, string email, 
+            string password, string? role, List<MoviesModel>? movies, int? categoryId, CategoryModel? category)
         {
             Id = id;
             Name = name;
@@ -41,6 +45,8 @@ namespace LibraryMovie.Models
             Password = password;
             Role = role;
             Movies = movies;
+            CategoryId = categoryId;
+            Category = category;
         }
     }
 }

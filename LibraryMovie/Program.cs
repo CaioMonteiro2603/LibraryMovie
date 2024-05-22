@@ -3,6 +3,7 @@ using LibraryMovie.Data;
 using LibraryMovie.Models;
 using LibraryMovie.Repository;
 using LibraryMovie.Repository.Interface;
+using LibraryMovie.Services;
 using LibraryMovie.ViewModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.Data;
@@ -38,6 +39,7 @@ namespace LibraryMovie
             );
             #endregion
 
+            builder.Services.AddScoped<AuthenticationService>(); 
             #region DependencyInection
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IMoviesRepository, MovieRepository>();

@@ -15,7 +15,7 @@ namespace LibraryMovie.Repository
         }
         public async Task<IList<CategoryModel>> FindAll()
         {
-            var findAllCategorys = await _dataContext.Category.AsNoTracking().Include(u => u.User).ToListAsync();
+            var findAllCategorys = await _dataContext.Category.AsNoTracking().Include(u => u.Users).ToListAsync();
                 
 
             return findAllCategorys; 
@@ -33,8 +33,8 @@ namespace LibraryMovie.Repository
         public async Task<CategoryModel> FindById(int id)
         {
             var findById = await _dataContext.Category.AsNoTracking()
-                                                .Include(u => u.User)
-                                                .FirstOrDefaultAsync(i => i.Id == id);
+                                                .Include(u => u.Users)
+                                                .FirstOrDefaultAsync(i => i.MovieCategoryId == id);
 
             return findById; 
         }
@@ -44,7 +44,7 @@ namespace LibraryMovie.Repository
             _dataContext.Category.Add(categoryModel);
             await _dataContext.SaveChangesAsync();
 
-            return categoryModel.Id;
+            return categoryModel.MovieCategoryId;
         }
 
         public async Task<CategoryModel> Update(CategoryModel categoryModel, int id)
@@ -53,7 +53,7 @@ namespace LibraryMovie.Repository
 
             if (categoryId == null) throw new Exception($"The category's id: {id} doesn't exist!"); 
 
-            categoryId.Id = categoryModel.Id;
+            categoryId.MovieCategoryId = categoryModel.MovieCategoryId;
             categoryId.Theme = categoryModel.Theme;
 
             _dataContext.Category.Update(categoryId);

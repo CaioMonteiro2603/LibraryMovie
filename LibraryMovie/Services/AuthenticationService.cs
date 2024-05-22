@@ -22,9 +22,10 @@ namespace LibraryMovie.Services
                     new Claim( ClaimTypes.Email, usersModel.Email),
                     new Claim( ClaimTypes.Role, usersModel.Role),
                     new Claim("Id", usersModel.Id.ToString())
+                    
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(5),
-                Issuer = "library",
+                Issuer = "library", 
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(secret),
                     SecurityAlgorithms.HmacSha256Signature)

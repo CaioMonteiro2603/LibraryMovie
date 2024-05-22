@@ -8,24 +8,26 @@ namespace LibraryMovie.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int MovieCategoryId { get; set; }
 
         [Required]
         [StringLength(15)]
         public string Theme {  get; set; }
 
-        public int? UserId { get; set; }
-        public virtual UsersModel? User { get; set; }
+        public virtual ICollection<MoviesModel>? Movies { get; set; }
+
+        public UsersModel Users { get; set; }
         public CategoryModel()
         {
             
         }
 
-        public CategoryModel(int id, string theme, UsersModel user)
+        public CategoryModel(int movieCategoryId, string theme, List<MoviesModel>? movies, UsersModel users)
         {
-            Id = id;
+            MovieCategoryId = movieCategoryId;
             Theme = theme;
-            User = user;
+            Movies = movies;
+            Users = users;
         }
     }
 }
