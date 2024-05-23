@@ -1,10 +1,12 @@
 using AutoMapper;
+using FluentValidation.AspNetCore;
 using LibraryMovie.Data;
 using LibraryMovie.DTOs;
 using LibraryMovie.Models;
 using LibraryMovie.Repository;
 using LibraryMovie.Repository.Interface;
 using LibraryMovie.Services;
+using LibraryMovie.Validators;
 using LibraryMovie.ViewModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.Data;
@@ -30,8 +32,14 @@ namespace LibraryMovie
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddMemoryCache();
+
+            builder.Services.AddControllers()
+                .AddFluentValidation(config => config.RegisterValidatorsFromAssemblyContaining<UserValidator>())
+                .AddFluentValidation(config => config.RegisterValidatorsFromAssemblyContaining<MovieValidator>())
+                .AddFluentValidation(config => config.RegisterValidatorsFromAssemblyContaining<CategoryValidator>());
+
+
 
             #region DBConnection
             var connectionString = builder.Configuration.GetConnectionString("databaseUrl");

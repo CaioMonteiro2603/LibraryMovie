@@ -29,11 +29,10 @@ namespace LibraryMovie.Data
             modelBuilder.Entity<MoviesModel>()
                 .ToTable("Movies")
                 .HasKey(c => c.Id);
-           
+
             modelBuilder.Entity<MoviesModel>()
                 .Property(c => c.Title)
-                .HasColumnName("title")
-                .HasMaxLength(50);
+                .HasColumnName("title"); 
 
 
 
@@ -42,9 +41,8 @@ namespace LibraryMovie.Data
                 .HasKey(c => c.Id);
 
             modelBuilder.Entity<UsersModel>()
-                .Property(c=> c.Name)
-                .HasColumnName("Name")
-                .HasMaxLength(10);
+                .Property(c => c.Name)
+                .HasColumnName("Name");
 
             modelBuilder.Entity<UsersModel>()
                 .Property(c => c.Password)
@@ -53,8 +51,8 @@ namespace LibraryMovie.Data
 
             modelBuilder.Entity<UsersModel>()
                 .Property(c => c.Role)
-                .HasColumnName("Role")
-                .HasMaxLength(8);
+                .HasColumnName("Role");
+                
 
             modelBuilder.Entity<CategoryModel>()
                 .ToTable("MovieCategory")
@@ -62,7 +60,6 @@ namespace LibraryMovie.Data
 
             modelBuilder.Entity<CategoryModel>()
                 .Property(c => c.Theme)
-                .HasMaxLength(15)
                 .HasColumnName("Theme");
                 
 
