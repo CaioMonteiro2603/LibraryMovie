@@ -2,12 +2,15 @@
 using LibraryMovie.DTOs;
 using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
-using LibraryMovie.Services;
 using LibraryMovie.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace LibraryMovie.Controllers
 {
@@ -38,23 +41,37 @@ namespace LibraryMovie.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IList<UserDto>>> FindAllAsync()
+        public async Task<ActionResult<IList<dynamic>>> FindAllAsync([FromQuery] int pagina = 0, [FromQuery] int tamanho = 5)
         {
-            var findAllUsers = await _userRepository.FindAll();
+            var totalGeral = _userRepository.Count();
+            var totalPages = Convert.ToInt16(Math.Ceiling((double) totalGeral / tamanho));
+            var linkProxima = (pagina < totalPages - 1) ? $"/api/produto?pagina={pagina + 1}&tamanho={tamanho}" : "";
+            var linkAnterior = (pagina > 0) ? $"/api/produto?pagina={pagina - 1}&tamanho={tamanho}" : "";
 
-            if(findAllUsers.Count == 0)
-            {
-                return BadRequest(); 
-            }
-
-            if(findAllUsers == null)
+            if(pagina > totalPages)
             {
                 return NotFound();
             }
-            
-            var response = _mapper.Map<List<UserDto>>(findAllUsers);
-            return Ok(response);
-            
+
+            var user = _userRepository.FindAll(pagina, tamanho);
+
+            if(user == null)
+            {
+                return NoContent();
+            }
+
+            var back = new
+            {
+                user,
+                totalPages,
+                totalGeral,
+                linkProxima,
+                linkAnterior,
+                pagina = pagina,
+                tamanho = tamanho
+            };
+
+            return Ok(back); 
         }
 
         /// <summary>
@@ -207,8 +224,7 @@ namespace LibraryMovie.Controllers
                 return NotFound(); 
             } else
             {
-                // token to acess API
-                var token = AuthenticationService.GetToken(Login);
+                var token = GerarTokenJWT();
 
                 var loginResponseVM = _mapper.Map<LoginResponseVM>(Login);
 
@@ -216,6 +232,31 @@ namespace LibraryMovie.Controllers
 
                 return Ok(loginResponseVM); 
             }
+        }
+
+        private string GerarTokenJWT()
+        {
+            string chaveSecreta = "988b98fc-a834-4fbb-b58f-ceeee47a0463";
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chaveSecreta));
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256); //chave e header de segurança que estou usando
+
+            var claims = new[]
+            {
+                new Claim("login", "admin"),
+                new Claim("nome", "Administrador do Sistema")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "LibraryMovie", //fortalece a autenticacao
+                audience: "minha_aplicacao", //fortalece a autenticacao
+                claims: null, // criacao de informaçoes adicionais 
+                expires: DateTime.Now.AddHours(1),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

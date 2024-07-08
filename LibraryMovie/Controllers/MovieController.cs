@@ -14,7 +14,7 @@ namespace LibraryMovie.Controllers
     [ApiVersion("3.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class MovieController : ControllerBase
     {
         private readonly IMoviesRepository _moviesRepository;
@@ -35,7 +35,7 @@ namespace LibraryMovie.Controllers
         /// <response code="200">Sucess</response>
         [HttpGet]
         [ApiVersion("3.0")]
-        [Authorize(Roles = "admin, operator")]
+        //[Authorize(Roles = "admin, operator")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -178,7 +178,7 @@ namespace LibraryMovie.Controllers
         [Authorize(Roles = "admin, user")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<MoviesDto>> Post([FromBody] MoviesModel moviesModel)
+        public async Task<ActionResult<MoviesModel>> Post([FromBody] MoviesDto moviesDto)
         {
             try
             {
@@ -188,15 +188,16 @@ namespace LibraryMovie.Controllers
                 }else
                 {
 
-                    await _moviesRepository.Insert(moviesModel);
+                    
 
-                    var response = _mapper.Map<MoviesDto>(moviesModel); 
+                    var response = _mapper.Map<MoviesModel>(moviesDto);
+                    await _moviesRepository.Insert(response);
 
                     var url = Request.GetEncodedUrl().EndsWith("/") ?
                                                     Request.GetEncodedUrl() :
                                                     Request.GetEncodedUrl() + "/";
 
-                    url += moviesModel.Id;
+                    url += moviesDto.Id; 
                     return Created(url, response);
                 }
                

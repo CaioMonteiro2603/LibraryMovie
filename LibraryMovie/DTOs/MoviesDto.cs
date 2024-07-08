@@ -12,10 +12,6 @@
 
         public int CategoryId { get; set; }
 
-        public CategoryDto Category { get; set; }
-
         public int UserId { get; set; }
-
-        public UserDto User { get; set; }
     }
 }

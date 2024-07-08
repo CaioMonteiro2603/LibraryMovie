@@ -4,15 +4,17 @@ namespace LibraryMovie.Repository.Interface
 {
     public interface IUserRepository
     {
-        public Task<IList<UsersModel>> FindAll();
+        Task<IList<UsersModel>> FindAll(int pagina, int tamanhoPagina);
 
-        public Task<UsersModel> FindByEmail(string email);
-        public Task<UsersModel> FindById(int id);
+        Task<UsersModel> FindByEmail(string email);
+        Task<UsersModel> FindById(int id);
 
-        public Task<int> Insert(UsersModel usersModel); 
+        int Count();
 
-        public Task<UsersModel> Update(UsersModel usersModel, int id);
+        Task<int> Insert(UsersModel usersModel); 
 
-        public Task<bool> Delete(int id);
+        Task<UsersModel> Update(UsersModel usersModel, int id);
+
+        Task<bool> Delete(int id);
     }
 }

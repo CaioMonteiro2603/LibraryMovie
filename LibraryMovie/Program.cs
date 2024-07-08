@@ -5,7 +5,6 @@ using LibraryMovie.DTOs;
 using LibraryMovie.Models;
 using LibraryMovie.Repository;
 using LibraryMovie.Repository.Interface;
-using LibraryMovie.Services;
 using LibraryMovie.Validators;
 using LibraryMovie.ViewModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -28,6 +27,8 @@ namespace LibraryMovie
     {
         public static void Main(string[] args)
         {
+            string chaveSecreta = "988b98fc-a834-4fbb-b58f-ceeee47a0463"; 
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -47,8 +48,7 @@ namespace LibraryMovie
                 options => options.UseSqlServer(connectionString).EnableSensitiveDataLogging(true)
             );
             #endregion
-
-            builder.Services.AddScoped<AuthenticationService>(); 
+ 
             #region DependencyInection
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IMoviesRepository, MovieRepository>();
@@ -82,36 +82,7 @@ namespace LibraryMovie
             #endregion
 
             #region JWT
-            bool CustomLifetimeValidator(DateTime? notBefore, DateTime? expires, SecurityToken tokenToValidate, TokenValidationParameters @param)
-            {
-                if (expires != null)
-                {
-                    return expires > DateTime.UtcNow;
-                }
-                return false;
-            }
-
-            var key = Encoding.ASCII.GetBytes(Settings.SECRET_TOKEN);
-
-            builder.Services.AddAuthentication(a => {
-                a.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                a.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }
-                ).AddJwtBearer(options => {
-                    options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        ValidateIssuer = true,
-                        ValidIssuer = "library",
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        LifetimeValidator = CustomLifetimeValidator, // forma de validar se o token está expirado
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        RequireExpirationTime = true
-                    };
-                });
+            
             #endregion
 
             #region versionAPI
@@ -140,13 +111,54 @@ namespace LibraryMovie
 
 
             #region APIDocumentation
-            builder.Services.AddSwaggerGen(options =>
-            { 
-            // Adicionar suporte a comentários XML
-            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            options.IncludeXmlComments(xmlPath);
+            builder.Services.AddSwaggerGen(c =>
+            {
 
+                var securitySchema = new OpenApiSecurityScheme
+                {
+                    Name = "LibraryMovie",
+                    Description = "",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Reference = new OpenApiReference
+                    {
+                        Id = JwtBearerDefaults.AuthenticationScheme,
+                        Type = ReferenceType.SecurityScheme
+                    }
+
+                };
+
+                c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, securitySchema);
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {securitySchema, new string[]{} }
+                });
+
+                // Adicionar suporte a comentários XML
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+
+            });
+
+            builder.Services.AddAuthentication(opt =>
+            {
+                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(opt =>
+            {
+                opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "LibraryMovie",
+                    ValidAudience = "minha_aplicacao",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chaveSecreta))
+                };
             });
             #endregion
             var app = builder.Build();
@@ -174,6 +186,7 @@ namespace LibraryMovie
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseApiVersioning(); 

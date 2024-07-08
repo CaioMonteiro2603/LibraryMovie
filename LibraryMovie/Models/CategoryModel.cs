@@ -5,7 +5,6 @@ namespace LibraryMovie.Models
     {
         public int MovieCategoryId { get; set; }
 
-        [Required]
         public string Theme { get; set; }
         public virtual ICollection<MoviesModel>? Movies { get; set; }
 

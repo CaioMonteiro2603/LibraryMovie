@@ -1,7 +1,6 @@
 ﻿using LibraryMovie.Data;
 using LibraryMovie.Models;
 using LibraryMovie.Repository.Interface;
-using LibraryMovie.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,14 +10,12 @@ namespace LibraryMovie.Repository
     public class UserRepository : IUserRepository
     {
         private readonly DataContext _dataContext;
-        private readonly AuthenticationService _autheticationService; 
 
-        public UserRepository(DataContext dataContext, AuthenticationService authenticationService)
+        public UserRepository(DataContext dataContext)
         {
             _dataContext = dataContext;
-            _autheticationService = authenticationService;
         }
-        public async Task<IList<UsersModel>> FindAll()
+        public async Task<IList<UsersModel>> FindAll(int pagina, int tamanhoPagina)
         {
             var findAllUsers = await _dataContext.Users.AsNoTracking().ToListAsync();
 
@@ -39,6 +36,11 @@ namespace LibraryMovie.Repository
                                                      .FirstOrDefaultAsync(i => i.Id == id);
 
             return findUserId; 
+        }
+
+        public int Count()
+        {
+            return _dataContext.Users.Count();
         }
 
         public async Task<int> Insert(UsersModel usersModel)
